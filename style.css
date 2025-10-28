@@ -1555,15 +1555,13 @@ body {
 }
 
 .graph-container {
-  background-color: var(--color-bg-tertiary);
-  border-radius: var(--radius-md);
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border: 1px solid var(--color-border);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 500px;
+    position: relative;
+    height: 500px;
+    width: 100%;
+    background: var(--background-secondary);
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    padding: 1rem;
 }
 
 #graphCanvas {
@@ -1572,25 +1570,23 @@ body {
 }
 
 .graph-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
-  padding: 1rem;
-  background-color: var(--color-bg-tertiary);
-  border-radius: var(--radius-sm);
+    margin-top: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
 }
 
 .legend-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-primary);
 }
-
-.legend-color {
-  width: 20px;
-  height: 3px;
-  border-radius: 2px;
-}
+.color-box {
+    width: 15px;
+    height: 15px;
+    border-radius: 3px;
+    margin-right: 8px;
 
 .legend-text {
   color: var(--color-text-secondary);
