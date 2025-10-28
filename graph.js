@@ -321,3 +321,31 @@ if (document.readyState === 'loading') {
 } else {
   initGraphPlotter();
 }
+// Anti-aliasing and rounded lines
+ctx.lineJoin = 'round';
+ctx.lineCap = 'round';
+
+// Implicit multiplication
+function sanitizeExpression(expr, x) {
+  let sanitized = expr
+    .replace(/(\d)([a-zA-Z])/g, '$1*$2')  // 2x -> 2*x
+    .replace(/([)])([0-9a-zA-Z])/g, '$1*$2') // )(x -> )*x
+    .replace(/([0-9a-zA-Z])([(])/g, '$1*$2'); // 2(x) -> 2*(x)
+  sanitized = sanitized.replace(/x/g, `(${x})`);
+  return sanitized;
+}
+function evaluateExpression(expr, x) {
+  let evalExpr = expr
+    .replace(/\^/g, '**')
+    .replace(/sin\(/g, 'Math.sin(')
+    .replace(/cos\(/g, 'Math.cos(')
+    .replace(/tan\(/g, 'Math.tan(')
+    .replace(/log\(/g, 'Math.log10(')
+    .replace(/ln\(/g, 'Math.log(')
+    .replace(/sqrt\(/g, 'Math.sqrt(')
+    .replace(/pi/g, 'Math.PI')
+    .replace(/e(?![a-z])/g, 'Math.E');
+  
+  evalExpr = sanitizeExpression(evalExpr, x);
+  return eval(evalExpr);
+}
