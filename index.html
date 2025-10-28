@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CalcPro - Professional Calculator Suite</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">CalcPro</div>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="nav-menu" id="navMenu">
+                <li><a href="#home" class="nav-link active" data-page="home">Home</a></li>
+                <li><a href="#matrix" class="nav-link" data-page="matrix">Matrix</a></li>
+                <li><a href="#equations" class="nav-link" data-page="equations">Equations</a></li>
+                <li><a href="#calculus" class="nav-link" data-page="calculus">Calculus</a></li>
+                <li><a href="#graph" class="nav-link" data-page="graph">Graph</a></li>
+            </ul>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+                <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                </svg>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <!-- Home Page (Calculator) -->
+        <div class="page active" id="homePage">
+            <div class="calculator-container">
+                <div class="calculator-wrapper">
+                    <div class="calculator">
+                        <div class="calculator-header">
+                            <div class="mode-toggle">
+                                <button id="modeToggle" class="mode-btn">ADV</button>
+                                <div class="angle-mode">
+                                    <button id="angleMode" class="angle-btn">DEG</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="display-container">
+                            <div class="expression" id="expression"></div>
+                            <div class="display" id="display">0</div>
+                        </div>
+                        <div class="buttons" id="calculatorButtons">
+                            <!-- Basic Mode Buttons -->
+                            <div class="basic-buttons">
+                                <button class="btn btn-clear" data-value="AC">AC</button>
+                                <button class="btn btn-function" data-value="(">(
+)</button>
+                                <button class="btn btn-function" data-value="%">%</button>
+                                <button class="btn btn-operator" data-value="/">÷</button>
+                                
+                                <button class="btn btn-number" data-value="7">7</button>
+                                <button class="btn btn-number" data-value="8">8</button>
+                                <button class="btn btn-number" data-value="9">9</button>
+                                <button class="btn btn-operator" data-value="*">×</button>
+                                
+                                <button class="btn btn-number" data-value="4">4</button>
+                                <button class="btn btn-number" data-value="5">5</button>
+                                <button class="btn btn-number" data-value="6">6</button>
+                                <button class="btn btn-operator" data-value="-">−</button>
+                                
+                                <button class="btn btn-number" data-value="1">1</button>
+                                <button class="btn btn-number" data-value="2">2</button>
+                                <button class="btn btn-number" data-value="3">3</button>
+                                <button class="btn btn-operator" data-value="+">+</button>
+                                
+                                <button class="btn btn-number" data-value="0">0</button>
+                                <button class="btn btn-number" data-value=".">.</button>
+                                <button class="btn btn-backspace" data-value="⌫">⌫</button>
+                                <button class="btn btn-equals" data-value="=">=</button>
+                            </div>
+                            
+                            <!-- Advanced Mode Buttons -->
+                            <div class="advanced-buttons hidden" id="advancedButtons">
+                                <button class="btn btn-function" data-value="sin(">sin</button>
+                                <button class="btn btn-function" data-value="cos(">cos</button>
+                                <button class="btn btn-function" data-value="tan(">tan</button>
+                                <button class="btn btn-function" data-value="sqrt(">√</button>
+                                
+                                <button class="btn btn-function" data-value="asin(">sin⁻¹</button>
+                                <button class="btn btn-function" data-value="acos(">cos⁻¹</button>
+                                <button class="btn btn-function" data-value="atan(">tan⁻¹</button>
+                                <button class="btn btn-function" data-value="cbrt(">∛</button>
+                                
+                                <button class="btn btn-function" data-value="log(">log</button>
+                                <button class="btn btn-function" data-value="ln(">ln</button>
+                                <button class="btn btn-function" data-value="exp(">e^</button>
+                                <button class="btn btn-function" data-value="^">x^y</button>
+                                
+                                <button class="btn btn-function" data-value="abs(">|x|</button>
+                                <button class="btn btn-function" data-value="pi">π</button>
+                                <button class="btn btn-function" data-value="e">e</button>
+                                <button class="btn btn-function" data-value="1/(">1/x</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="history-panel" id="historyPanel">
+                    <div class="history-header">
+                        <h3>History</h3>
+                        <button id="clearHistory" class="clear-history-btn">Clear</button>
+                    </div>
+                    <div class="history-list" id="historyList">
+                        <p class="history-empty">No calculations yet</p>
+                    </div>
+                </div>
+                
+                <button class="history-toggle" id="historyToggle">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="1 4 1 10 7 10"></polyline>
+                        <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Matrix Calculator Page -->
+        <div class="page" id="matrixPage">
+            <div class="page-content">
+                <h1 class="page-title">Matrix Calculator</h1>
+                <div class="matrix-calculator">
+                    <div class="matrix-controls">
+                        <div class="dimension-inputs">
+                            <div class="input-group">
+                                <label>Matrix A Size:</label>
+                                <input type="number" id="matrixARows" value="2" min="1" max="5" class="form-control">
+                                <span>×</span>
+                                <input type="number" id="matrixACols" value="2" min="1" max="5" class="form-control">
+                            </div>
+                            <div class="input-group">
+                                <label>Matrix B Size:</label>
+                                <input type="number" id="matrixBRows" value="2" min="1" max="5" class="form-control">
+                                <span>×</span>
+                                <input type="number" id="matrixBCols" value="2" min="1" max="5" class="form-control">
+                            </div>
+                        </div>
+                        <button id="generateMatrices" class="btn btn--primary">Generate Matrices</button>
+                    </div>
+                    
+                    <div class="matrices-container" id="matricesContainer">
+                        <div class="matrix-input-wrapper">
+                            <h3>Matrix A</h3>
+                            <div id="matrixAInput" class="matrix-grid"></div>
+                        </div>
+                        <div class="matrix-input-wrapper">
+                            <h3>Matrix B</h3>
+                            <div id="matrixBInput" class="matrix-grid"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="matrix-operations">
+                        <button class="btn btn--secondary" data-op="add">A + B</button>
+                        <button class="btn btn--secondary" data-op="subtract">A − B</button>
+                        <button class="btn btn--secondary" data-op="multiply">A × B</button>
+                        <button class="btn btn--secondary" data-op="transposeA">Transpose A</button>
+                        <button class="btn btn--secondary" data-op="transposeB">Transpose B</button>
+                        <button class="btn btn--secondary" data-op="determinantA">Det(A)</button>
+                        <button class="btn btn--secondary" data-op="determinantB">Det(B)</button>
+                        <button class="btn btn--secondary" data-op="inverseA">A⁻¹</button>
+                        <button class="btn btn--secondary" data-op="inverseB">B⁻¹</button>
+                    </div>
+                    
+                    <div class="matrix-result" id="matrixResult">
+                        <h3>Result</h3>
+                        <div id="matrixResultDisplay" class="result-display"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Equations Solver Page -->
+        <div class="page" id="equationsPage">
+            <div class="page-content">
+                <h1 class="page-title">Equations Solver</h1>
+                <div class="equations-solver">
+                    <div class="equation-controls">
+                        <label for="numVariables">Number of Variables:</label>
+                        <select id="numVariables" class="form-control">
+                            <option value="2">2 Variables</option>
+                            <option value="3">3 Variables</option>
+                            <option value="4">4 Variables</option>
+                            <option value="5">5 Variables</option>
+                        </select>
+                    </div>
+                    
+                    <div class="equations-input" id="equationsInput"></div>
+                    
+                    <button id="solveEquations" class="btn btn--primary">Solve System</button>
+                    
+                    <div class="equations-result" id="equationsResult"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calculus Page -->
+        <div class="page" id="calculusPage">
+            <div class="page-content">
+                <h1 class="page-title">Calculus Calculator</h1>
+                <div class="calculus-calculator">
+                    <div class="calculus-tabs">
+                        <button class="tab-btn active" data-tab="derivative">Differentiation</button>
+                        <button class="tab-btn" data-tab="integral">Integration</button>
+                    </div>
+                    
+                    <div class="tab-content active" id="derivativeTab">
+                        <div class="calculus-form">
+                            <div class="input-group">
+                                <label for="derivativeInput">Function f(x):</label>
+                                <input type="text" id="derivativeInput" class="form-control" placeholder="e.g., x^2 + 3*x + 5">
+                            </div>
+                            <button id="calculateDerivative" class="btn btn--primary">Calculate Derivative</button>
+                            <div id="derivativeResult" class="calculus-result"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="tab-content" id="integralTab">
+                        <div class="calculus-form">
+                            <div class="input-group">
+                                <label for="integralInput">Function f(x):</label>
+                                <input type="text" id="integralInput" class="form-control" placeholder="e.g., x^2 + 3*x + 5">
+                            </div>
+                            <div class="input-group">
+                                <label>
+                                    <input type="checkbox" id="definiteIntegral"> Definite Integral
+                                </label>
+                            </div>
+                            <div id="limitsInputs" class="limits-inputs hidden">
+                                <div class="input-group">
+                                    <label for="lowerLimit">Lower Limit:</label>
+                                    <input type="number" id="lowerLimit" class="form-control" placeholder="a">
+                                </div>
+                                <div class="input-group">
+                                    <label for="upperLimit">Upper Limit:</label>
+                                    <input type="number" id="upperLimit" class="form-control" placeholder="b">
+                                </div>
+                            </div>
+                            <button id="calculateIntegral" class="btn btn--primary">Calculate Integral</button>
+                            <div id="integralResult" class="calculus-result"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Graph Plotter Page -->
+        <div class="page" id="graphPage">
+            <div class="page-content">
+                <h1 class="page-title">Graph Plotter</h1>
+                <div class="graph-plotter">
+                    <div class="graph-controls">
+                        <div class="function-inputs" id="functionInputs">
+                            <div class="function-input-group">
+                                <input type="text" class="form-control function-input" placeholder="e.g., x^2, sin(x), x^3-2*x" data-index="0">
+                                <div class="color-indicator" style="background-color: #1FB8CD;"></div>
+                                <button class="btn-remove" data-index="0">×</button>
+                            </div>
+                        </div>
+                        <button id="addFunction" class="btn btn--secondary">+ Add Function</button>
+                        
+                        <div class="range-controls">
+                            <div class="input-group">
+                                <label for="xMin">X Min:</label>
+                                <input type="number" id="xMin" class="form-control" value="-10">
+                            </div>
+                            <div class="input-group">
+                                <label for="xMax">X Max:</label>
+                                <input type="number" id="xMax" class="form-control" value="10">
+                            </div>
+                            <div class="input-group">
+                                <label for="yMin">Y Min:</label>
+                                <input type="number" id="yMin" class="form-control" value="-10">
+                            </div>
+                            <div class="input-group">
+                                <label for="yMax">Y Max:</label>
+                                <input type="number" id="yMax" class="form-control" value="10">
+                            </div>
+                        </div>
+                        
+                        <div class="graph-buttons">
+                            <button id="plotGraph" class="btn btn--primary">Plot Graph</button>
+                            <button id="resetGraph" class="btn btn--secondary">Reset View</button>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="showGrid" checked> Show Grid
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="graph-container">
+                        <canvas id="graphCanvas"></canvas>
+                    </div>
+                    
+                    <div class="graph-legend" id="graphLegend"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Keyboard Shortcuts Help (Hidden by default) -->
+    <div class="shortcuts-help hidden" id="shortcutsHelp">
+        <div class="shortcuts-content">
+            <h3>Keyboard Shortcuts</h3>
+            <ul>
+                <li><kbd>0-9</kbd> Numbers</li>
+                <li><kbd>+ - * /</kbd> Operations</li>
+                <li><kbd>Enter</kbd> Calculate</li>
+                <li><kbd>Escape</kbd> Clear</li>
+                <li><kbd>Backspace</kbd> Delete</li>
+                <li><kbd>?</kbd> Show/Hide Help</li>
+            </ul>
+            <button class="btn btn--secondary" id="closeShortcuts">Close</button>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+    <script src="matrix.js"></script>
+    <script src="equations.js"></script>
+    <script src="calculus.js"></script>
+    <script src="graph.js"></script>
+</body>
+</html>
