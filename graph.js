@@ -1,4 +1,7 @@
-// Graph Plotter
+// -----------------------------
+// Improved Graph Plotter
+// -----------------------------
+
 let canvas, ctx;
 let functions = [''];
 const colors = ['#1FB8CD', '#FFC185', '#B4413C', '#ECEBD5', '#5D878F', '#DB4545', '#D2BA4C', '#964325', '#944454', '#13343B'];
@@ -18,16 +21,16 @@ const yMinInput = document.getElementById('yMin');
 const yMaxInput = document.getElementById('yMax');
 const graphLegend = document.getElementById('graphLegend');
 
-// Initialize Graph Plotter
+// Initialize
 function initGraphPlotter() {
   canvas = graphCanvas;
   ctx = canvas.getContext('2d');
+  ctx.lineJoin = 'round';
+  ctx.lineCap = 'round';
   
-  // Set canvas size
   resizeCanvas();
   window.addEventListener('resize', resizeCanvas);
-  
-  // Event listeners
+
   addFunctionBtn.addEventListener('click', addFunctionInput);
   plotGraphBtn.addEventListener('click', plotGraph);
   resetGraphBtn.addEventListener('click', resetGraph);
@@ -35,21 +38,14 @@ function initGraphPlotter() {
     showGrid = showGridCheckbox.checked;
     plotGraph();
   });
-  
-  // Range inputs
-  xMinInput.addEventListener('change', updateRanges);
-  xMaxInput.addEventListener('change', updateRanges);
-  yMinInput.addEventListener('change', updateRanges);
-  yMaxInput.addEventListener('change', updateRanges);
-  
-  // Setup remove buttons
+
+  [xMinInput, xMaxInput, yMinInput, yMaxInput].forEach(inp => inp.addEventListener('change', updateRanges));
+
   setupRemoveButtons();
-  
-  // Initial plot
   drawAxes();
 }
 
-// Resize Canvas
+// Resize canvas
 function resizeCanvas() {
   const container = canvas.parentElement;
   const size = Math.min(container.clientWidth - 32, 800);
@@ -58,16 +54,16 @@ function resizeCanvas() {
   if (ctx) plotGraph();
 }
 
-// Add Function Input
+// Add new input
 function addFunctionInput() {
   if (functions.length >= 5) {
     alert('Maximum 5 functions allowed');
     return;
   }
-  
+
   const index = functions.length;
   functions.push('');
-  
+
   const group = document.createElement('div');
   group.className = 'function-input-group';
   group.innerHTML = `
@@ -75,15 +71,15 @@ function addFunctionInput() {
     <div class="color-indicator" style="background-color: ${colors[index % colors.length]};"></div>
     <button class="btn-remove" data-index="${index}">×</button>
   `;
-  
+
   functionInputs.appendChild(group);
   setupRemoveButtons();
 }
 
-// Setup Remove Buttons
+// Setup remove buttons
 function setupRemoveButtons() {
   document.querySelectorAll('.btn-remove').forEach(btn => {
-    btn.addEventListener('click', (e) => {
+    btn.onclick = (e) => {
       const index = parseInt(e.target.dataset.index);
       if (functions.length === 1) {
         alert('At least one function input is required');
@@ -92,19 +88,19 @@ function setupRemoveButtons() {
       functions.splice(index, 1);
       e.target.closest('.function-input-group').remove();
       updateFunctionIndices();
-    });
+      plotGraph();
+    };
   });
 }
 
-// Update Function Indices
+// Update indices after removal
 function updateFunctionIndices() {
-  const inputs = document.querySelectorAll('.function-input');
-  inputs.forEach((input, i) => {
+  document.querySelectorAll('.function-input').forEach((input, i) => {
     input.dataset.index = i;
   });
 }
 
-// Update Ranges
+// Update graph ranges
 function updateRanges() {
   xMin = parseFloat(xMinInput.value);
   xMax = parseFloat(xMaxInput.value);
@@ -113,49 +109,40 @@ function updateRanges() {
   plotGraph();
 }
 
-// Plot Graph
+// Main plot function
 function plotGraph() {
-  // Clear canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   
-  // Draw grid and axes
   if (showGrid) drawGrid();
   drawAxes();
-  
-  // Get function expressions
+
   const inputs = document.querySelectorAll('.function-input');
   functions = Array.from(inputs).map(input => input.value.trim());
-  
-  // Plot each function
+
   functions.forEach((func, index) => {
-    if (func) {
-      plotFunction(func, colors[index % colors.length]);
-    }
+    if (func) plotFunction(func, colors[index % colors.length]);
   });
-  
-  // Update legend
+
   updateLegend();
 }
 
-// Draw Grid
+// Draw grid
 function drawGrid() {
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
   ctx.lineWidth = 1;
-  
-  const xStep = (xMax - xMin) / 10;
-  const yStep = (yMax - yMin) / 10;
-  
-  // Vertical lines
-  for (let x = xMin; x <= xMax; x += xStep) {
+
+  const xStep = niceStep((xMax - xMin) / 10);
+  const yStep = niceStep((yMax - yMin) / 10);
+
+  for (let x = Math.ceil(xMin / xStep) * xStep; x <= xMax; x += xStep) {
     const canvasX = mapX(x);
     ctx.beginPath();
     ctx.moveTo(canvasX, 0);
     ctx.lineTo(canvasX, canvas.height);
     ctx.stroke();
   }
-  
-  // Horizontal lines
-  for (let y = yMin; y <= yMax; y += yStep) {
+
+  for (let y = Math.ceil(yMin / yStep) * yStep; y <= yMax; y += yStep) {
     const canvasY = mapY(y);
     ctx.beginPath();
     ctx.moveTo(0, canvasY);
@@ -164,89 +151,80 @@ function drawGrid() {
   }
 }
 
-// Draw Axes
+// Draw axes
 function drawAxes() {
   ctx.strokeStyle = '#ffffff';
   ctx.lineWidth = 2;
-  
-  // X-axis
+
   const yZero = mapY(0);
   if (yZero >= 0 && yZero <= canvas.height) {
     ctx.beginPath();
     ctx.moveTo(0, yZero);
     ctx.lineTo(canvas.width, yZero);
     ctx.stroke();
-    
-    // X-axis labels
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '12px Arial';
-    ctx.textAlign = 'center';
-    const xStep = (xMax - xMin) / 5;
-    for (let x = xMin; x <= xMax; x += xStep) {
-      const canvasX = mapX(x);
-      if (Math.abs(x) > 0.01) {
-        ctx.fillText(x.toFixed(1), canvasX, yZero + 20);
-      }
-    }
+    drawLabels('x', yZero, true);
   }
-  
-  // Y-axis
+
   const xZero = mapX(0);
   if (xZero >= 0 && xZero <= canvas.width) {
     ctx.beginPath();
     ctx.moveTo(xZero, 0);
     ctx.lineTo(xZero, canvas.height);
     ctx.stroke();
-    
-    // Y-axis labels
-    ctx.textAlign = 'right';
-    const yStep = (yMax - yMin) / 5;
-    for (let y = yMin; y <= yMax; y += yStep) {
-      const canvasY = mapY(y);
-      if (Math.abs(y) > 0.01) {
-        ctx.fillText(y.toFixed(1), xZero - 10, canvasY + 4);
-      }
-    }
+    drawLabels('y', xZero, false);
   }
 }
 
-// Plot Function
+// Draw axis labels
+function drawLabels(axis, base, isX) {
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '12px Arial';
+  ctx.textAlign = 'center';
+
+  const step = (isX ? (xMax - xMin) : (yMax - yMin)) / 5;
+  for (let v = isX ? xMin : yMin; v <= (isX ? xMax : yMax); v += step) {
+    const pos = isX ? mapX(v) : mapY(v);
+    if (Math.abs(v) < 0.001) continue;
+
+    if (isX) ctx.fillText(v.toFixed(1), pos, base + 16);
+    else ctx.fillText(v.toFixed(1), base - 10, pos + 4);
+  }
+}
+
+// Plot function
 function plotFunction(expression, color) {
   ctx.strokeStyle = color;
   ctx.lineWidth = 2;
   ctx.beginPath();
-  
+
   let started = false;
   const step = (xMax - xMin) / canvas.width;
-  
+
   for (let x = xMin; x <= xMax; x += step) {
     try {
       const y = evaluateExpression(expression, x);
-      
-      if (isNaN(y) || !isFinite(y)) continue;
-      
-      const canvasX = mapX(x);
-      const canvasY = mapY(y);
-      
-      if (canvasY < -100 || canvasY > canvas.height + 100) continue;
-      
+      if (!isFinite(y)) { started = false; continue; }
+
+      const cx = mapX(x);
+      const cy = mapY(y);
+
       if (!started) {
-        ctx.moveTo(canvasX, canvasY);
+        ctx.moveTo(cx, cy);
         started = true;
       } else {
-        ctx.lineTo(canvasX, canvasY);
+        ctx.lineTo(cx, cy);
       }
-    } catch (e) {
+    } catch {
       started = false;
     }
   }
-  
+
   ctx.stroke();
 }
 
-// Evaluate Expression
+// Evaluate math expression safely
 function evaluateExpression(expr, x) {
-  let evalExpr = expr
+  let safeExpr = expr
     .replace(/\^/g, '**')
     .replace(/sin\(/g, 'Math.sin(')
     .replace(/cos\(/g, 'Math.cos(')
@@ -261,31 +239,47 @@ function evaluateExpression(expr, x) {
     .replace(/exp\(/g, 'Math.exp(')
     .replace(/abs\(/g, 'Math.abs(')
     .replace(/pi/g, 'Math.PI')
-    .replace(/e(?![a-z])/g, 'Math.E')
-    .replace(/x/g, `(${x})`);
-  
-  return eval(evalExpr);
+    .replace(/e(?![a-z])/g, 'Math.E');
+
+  safeExpr = implicitMultiplication(safeExpr);
+  safeExpr = safeExpr.replace(/x/g, `(${x})`);
+
+  return eval(safeExpr);
 }
 
-// Map X coordinate
-function mapX(x) {
-  return ((x - xMin) / (xMax - xMin)) * canvas.width;
+// Implicit multiplication handling (2x, 3sin(x), etc.)
+function implicitMultiplication(expr) {
+  return expr
+    .replace(/(\d)([a-zA-Z(])/g, '$1*$2')
+    .replace(/([a-zA-Z)])(\d)/g, '$1*$2')
+    .replace(/([)])([(a-zA-Z0-9])/g, '$1*$2');
 }
 
-// Map Y coordinate
-function mapY(y) {
-  return canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height;
+// Nice grid step rounding
+function niceStep(step) {
+  const exp = Math.floor(Math.log10(step));
+  const frac = step / Math.pow(10, exp);
+  let niceFrac;
+  if (frac < 1.5) niceFrac = 1;
+  else if (frac < 3) niceFrac = 2;
+  else if (frac < 7) niceFrac = 5;
+  else niceFrac = 10;
+  return niceFrac * Math.pow(10, exp);
 }
 
-// Update Legend
+// Coordinate mapping
+function mapX(x) { return ((x - xMin) / (xMax - xMin)) * canvas.width; }
+function mapY(y) { return canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height; }
+
+// Legend
 function updateLegend() {
   graphLegend.innerHTML = '';
-  functions.forEach((func, index) => {
+  functions.forEach((func, i) => {
     if (func) {
       const item = document.createElement('div');
       item.className = 'legend-item';
       item.innerHTML = `
-        <div class="legend-color" style="background-color: ${colors[index % colors.length]};"></div>
+        <div class="legend-color" style="background-color: ${colors[i % colors.length]};"></div>
         <div class="legend-text">${func}</div>
       `;
       graphLegend.appendChild(item);
@@ -293,59 +287,23 @@ function updateLegend() {
   });
 }
 
-// Reset Graph
+// Reset graph
 function resetGraph() {
   xMinInput.value = -10;
   xMaxInput.value = 10;
   yMinInput.value = -10;
   yMaxInput.value = 10;
   updateRanges();
-  
-  // Clear all function inputs except first
+
   const inputs = document.querySelectorAll('.function-input');
   inputs.forEach((input, i) => {
-    if (i === 0) {
-      input.value = '';
-    } else {
-      input.closest('.function-input-group').remove();
-    }
+    if (i === 0) input.value = '';
+    else input.closest('.function-input-group').remove();
   });
   functions = [''];
-  
   plotGraph();
 }
 
-// Initialize when page loads
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initGraphPlotter);
-} else {
-  initGraphPlotter();
-}
-// Anti-aliasing and rounded lines
-ctx.lineJoin = 'round';
-ctx.lineCap = 'round';
-
-// Implicit multiplication
-function sanitizeExpression(expr, x) {
-  let sanitized = expr
-    .replace(/(\d)([a-zA-Z])/g, '$1*$2')  // 2x -> 2*x
-    .replace(/([)])([0-9a-zA-Z])/g, '$1*$2') // )(x -> )*x
-    .replace(/([0-9a-zA-Z])([(])/g, '$1*$2'); // 2(x) -> 2*(x)
-  sanitized = sanitized.replace(/x/g, `(${x})`);
-  return sanitized;
-}
-function evaluateExpression(expr, x) {
-  let evalExpr = expr
-    .replace(/\^/g, '**')
-    .replace(/sin\(/g, 'Math.sin(')
-    .replace(/cos\(/g, 'Math.cos(')
-    .replace(/tan\(/g, 'Math.tan(')
-    .replace(/log\(/g, 'Math.log10(')
-    .replace(/ln\(/g, 'Math.log(')
-    .replace(/sqrt\(/g, 'Math.sqrt(')
-    .replace(/pi/g, 'Math.PI')
-    .replace(/e(?![a-z])/g, 'Math.E');
-  
-  evalExpr = sanitizeExpression(evalExpr, x);
-  return eval(evalExpr);
-}
+// Initialize
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initGraphPlotter);
+else initGraphPlotter();
