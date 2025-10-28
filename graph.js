@@ -1,309 +1,148 @@
-// -----------------------------
-// Improved Graph Plotter
-// -----------------------------
+// ==============================
+// Graph Plotter (Chart.js)
+// ==============================
 
-let canvas, ctx;
-let functions = [''];
-const colors = ['#1FB8CD', '#FFC185', '#B4413C', '#ECEBD5', '#5D878F', '#DB4545', '#D2BA4C', '#964325', '#944454', '#13343B'];
-let xMin = -10, xMax = 10, yMin = -10, yMax = 10;
-let showGrid = true;
+let chartInstance = null;
+const canvas = document.getElementById("graphCanvas");
+const ctx = canvas.getContext("2d");
 
-// DOM Elements
-const graphCanvas = document.getElementById('graphCanvas');
-const functionInputs = document.getElementById('functionInputs');
-const addFunctionBtn = document.getElementById('addFunction');
-const plotGraphBtn = document.getElementById('plotGraph');
-const resetGraphBtn = document.getElementById('resetGraph');
-const showGridCheckbox = document.getElementById('showGrid');
-const xMinInput = document.getElementById('xMin');
-const xMaxInput = document.getElementById('xMax');
-const yMinInput = document.getElementById('yMin');
-const yMaxInput = document.getElementById('yMax');
-const graphLegend = document.getElementById('graphLegend');
+// Function colors for multiple inputs
+const colors = ["#1FB8CD", "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0"];
 
-// Initialize
-function initGraphPlotter() {
-  canvas = graphCanvas;
-  ctx = canvas.getContext('2d');
-  ctx.lineJoin = 'round';
-  ctx.lineCap = 'round';
-  
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
-
-  addFunctionBtn.addEventListener('click', addFunctionInput);
-  plotGraphBtn.addEventListener('click', plotGraph);
-  resetGraphBtn.addEventListener('click', resetGraph);
-  showGridCheckbox.addEventListener('change', () => {
-    showGrid = showGridCheckbox.checked;
-    plotGraph();
-  });
-
-  [xMinInput, xMaxInput, yMinInput, yMaxInput].forEach(inp => inp.addEventListener('change', updateRanges));
-
-  setupRemoveButtons();
-  drawAxes();
-}
-
-// Resize canvas
-function resizeCanvas() {
-  const container = canvas.parentElement;
-  const size = Math.min(container.clientWidth - 32, 800);
-  canvas.width = size;
-  canvas.height = size;
-  if (ctx) plotGraph();
-}
-
-// Add new input
-function addFunctionInput() {
-  if (functions.length >= 5) {
-    alert('Maximum 5 functions allowed');
-    return;
-  }
-
-  const index = functions.length;
-  functions.push('');
-
-  const group = document.createElement('div');
-  group.className = 'function-input-group';
-  group.innerHTML = `
-    <input type="text" class="form-control function-input" placeholder="e.g., x^2, sin(x), x^3-2*x" data-index="${index}">
-    <div class="color-indicator" style="background-color: ${colors[index % colors.length]};"></div>
-    <button class="btn-remove" data-index="${index}">×</button>
-  `;
-
-  functionInputs.appendChild(group);
-  setupRemoveButtons();
-}
-
-// Setup remove buttons
-function setupRemoveButtons() {
-  document.querySelectorAll('.btn-remove').forEach(btn => {
-    btn.onclick = (e) => {
-      const index = parseInt(e.target.dataset.index);
-      if (functions.length === 1) {
-        alert('At least one function input is required');
-        return;
-      }
-      functions.splice(index, 1);
-      e.target.closest('.function-input-group').remove();
-      updateFunctionIndices();
-      plotGraph();
-    };
-  });
-}
-
-// Update indices after removal
-function updateFunctionIndices() {
-  document.querySelectorAll('.function-input').forEach((input, i) => {
-    input.dataset.index = i;
-  });
-}
-
-// Update graph ranges
-function updateRanges() {
-  xMin = parseFloat(xMinInput.value);
-  xMax = parseFloat(xMaxInput.value);
-  yMin = parseFloat(yMinInput.value);
-  yMax = parseFloat(yMaxInput.value);
-  plotGraph();
-}
-
-// Main plot function
 function plotGraph() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
-  if (showGrid) drawGrid();
-  drawAxes();
+    const inputs = document.querySelectorAll(".function-input");
+    const xMin = parseFloat(document.getElementById("xMin").value);
+    const xMax = parseFloat(document.getElementById("xMax").value);
+    const yMin = parseFloat(document.getElementById("yMin").value);
+    const yMax = parseFloat(document.getElementById("yMax").value);
+    const showGrid = document.getElementById("showGrid").checked;
+    const legendContainer = document.getElementById("graphLegend");
+    legendContainer.innerHTML = "";
 
-  const inputs = document.querySelectorAll('.function-input');
-  functions = Array.from(inputs).map(input => input.value.trim());
-
-  functions.forEach((func, index) => {
-    if (func) plotFunction(func, colors[index % colors.length]);
-  });
-
-  updateLegend();
-}
-
-// Draw grid
-function drawGrid() {
-  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-  ctx.lineWidth = 1;
-
-  const xStep = niceStep((xMax - xMin) / 10);
-  const yStep = niceStep((yMax - yMin) / 10);
-
-  for (let x = Math.ceil(xMin / xStep) * xStep; x <= xMax; x += xStep) {
-    const canvasX = mapX(x);
-    ctx.beginPath();
-    ctx.moveTo(canvasX, 0);
-    ctx.lineTo(canvasX, canvas.height);
-    ctx.stroke();
-  }
-
-  for (let y = Math.ceil(yMin / yStep) * yStep; y <= yMax; y += yStep) {
-    const canvasY = mapY(y);
-    ctx.beginPath();
-    ctx.moveTo(0, canvasY);
-    ctx.lineTo(canvas.width, canvasY);
-    ctx.stroke();
-  }
-}
-
-// Draw axes
-function drawAxes() {
-  ctx.strokeStyle = '#ffffff';
-  ctx.lineWidth = 2;
-
-  const yZero = mapY(0);
-  if (yZero >= 0 && yZero <= canvas.height) {
-    ctx.beginPath();
-    ctx.moveTo(0, yZero);
-    ctx.lineTo(canvas.width, yZero);
-    ctx.stroke();
-    drawLabels('x', yZero, true);
-  }
-
-  const xZero = mapX(0);
-  if (xZero >= 0 && xZero <= canvas.width) {
-    ctx.beginPath();
-    ctx.moveTo(xZero, 0);
-    ctx.lineTo(xZero, canvas.height);
-    ctx.stroke();
-    drawLabels('y', xZero, false);
-  }
-}
-
-// Draw axis labels
-function drawLabels(axis, base, isX) {
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '12px Arial';
-  ctx.textAlign = 'center';
-
-  const step = (isX ? (xMax - xMin) : (yMax - yMin)) / 5;
-  for (let v = isX ? xMin : yMin; v <= (isX ? xMax : yMax); v += step) {
-    const pos = isX ? mapX(v) : mapY(v);
-    if (Math.abs(v) < 0.001) continue;
-
-    if (isX) ctx.fillText(v.toFixed(1), pos, base + 16);
-    else ctx.fillText(v.toFixed(1), base - 10, pos + 4);
-  }
-}
-
-// Plot function
-function plotFunction(expression, color) {
-  ctx.strokeStyle = color;
-  ctx.lineWidth = 2;
-  ctx.beginPath();
-
-  let started = false;
-  const step = (xMax - xMin) / canvas.width;
-
-  for (let x = xMin; x <= xMax; x += step) {
-    try {
-      const y = evaluateExpression(expression, x);
-      if (!isFinite(y)) { started = false; continue; }
-
-      const cx = mapX(x);
-      const cy = mapY(y);
-
-      if (!started) {
-        ctx.moveTo(cx, cy);
-        started = true;
-      } else {
-        ctx.lineTo(cx, cy);
-      }
-    } catch {
-      started = false;
+    if (isNaN(xMin) || isNaN(xMax) || xMin >= xMax) {
+        alert("Please enter valid X range values.");
+        return;
     }
-  }
 
-  ctx.stroke();
-}
-
-// Evaluate math expression safely
-function evaluateExpression(expr, x) {
-  let safeExpr = expr
-    .replace(/\^/g, '**')
-    .replace(/sin\(/g, 'Math.sin(')
-    .replace(/cos\(/g, 'Math.cos(')
-    .replace(/tan\(/g, 'Math.tan(')
-    .replace(/asin\(/g, 'Math.asin(')
-    .replace(/acos\(/g, 'Math.acos(')
-    .replace(/atan\(/g, 'Math.atan(')
-    .replace(/sqrt\(/g, 'Math.sqrt(')
-    .replace(/cbrt\(/g, 'Math.cbrt(')
-    .replace(/log\(/g, 'Math.log10(')
-    .replace(/ln\(/g, 'Math.log(')
-    .replace(/exp\(/g, 'Math.exp(')
-    .replace(/abs\(/g, 'Math.abs(')
-    .replace(/pi/g, 'Math.PI')
-    .replace(/e(?![a-z])/g, 'Math.E');
-
-  safeExpr = implicitMultiplication(safeExpr);
-  safeExpr = safeExpr.replace(/x/g, `(${x})`);
-
-  return eval(safeExpr);
-}
-
-// Implicit multiplication handling (2x, 3sin(x), etc.)
-function implicitMultiplication(expr) {
-  return expr
-    .replace(/(\d)([a-zA-Z(])/g, '$1*$2')
-    .replace(/([a-zA-Z)])(\d)/g, '$1*$2')
-    .replace(/([)])([(a-zA-Z0-9])/g, '$1*$2');
-}
-
-// Nice grid step rounding
-function niceStep(step) {
-  const exp = Math.floor(Math.log10(step));
-  const frac = step / Math.pow(10, exp);
-  let niceFrac;
-  if (frac < 1.5) niceFrac = 1;
-  else if (frac < 3) niceFrac = 2;
-  else if (frac < 7) niceFrac = 5;
-  else niceFrac = 10;
-  return niceFrac * Math.pow(10, exp);
-}
-
-// Coordinate mapping
-function mapX(x) { return ((x - xMin) / (xMax - xMin)) * canvas.width; }
-function mapY(y) { return canvas.height - ((y - yMin) / (yMax - yMin)) * canvas.height; }
-
-// Legend
-function updateLegend() {
-  graphLegend.innerHTML = '';
-  functions.forEach((func, i) => {
-    if (func) {
-      const item = document.createElement('div');
-      item.className = 'legend-item';
-      item.innerHTML = `
-        <div class="legend-color" style="background-color: ${colors[i % colors.length]};"></div>
-        <div class="legend-text">${func}</div>
-      `;
-      graphLegend.appendChild(item);
+    // Generate x values (smooth curve)
+    const step = (xMax - xMin) / 200;
+    const xValues = [];
+    for (let x = xMin; x <= xMax; x += step) {
+        xValues.push(x);
     }
-  });
+
+    // Evaluate functions safely
+    const datasets = [];
+    inputs.forEach((input, index) => {
+        const expr = input.value.trim();
+        if (!expr) return;
+
+        const color = colors[index % colors.length];
+        const yValues = xValues.map(x => {
+            try {
+                // Replace math symbols and functions for eval
+                const replaced = expr
+                    .replace(/\^/g, "**")
+                    .replace(/sin/g, "Math.sin")
+                    .replace(/cos/g, "Math.cos")
+                    .replace(/tan/g, "Math.tan")
+                    .replace(/log/g, "Math.log10")
+                    .replace(/ln/g, "Math.log")
+                    .replace(/sqrt/g, "Math.sqrt")
+                    .replace(/abs/g, "Math.abs")
+                    .replace(/pi/g, "Math.PI")
+                    .replace(/e/g, "Math.E");
+
+                const y = eval(replaced);
+                return isFinite(y) ? y : NaN;
+            } catch {
+                return NaN;
+            }
+        });
+
+        datasets.push({
+            label: expr,
+            data: xValues.map((x, i) => ({ x, y: yValues[i] })),
+            borderColor: color,
+            borderWidth: 2,
+            fill: false,
+            tension: 0.1
+        });
+
+        // Add legend entry
+        const legendItem = document.createElement("div");
+        legendItem.className = "legend-item";
+        legendItem.innerHTML = `<span class="color-box" style="background:${color}"></span>${expr}`;
+        legendContainer.appendChild(legendItem);
+    });
+
+    if (chartInstance) chartInstance.destroy();
+
+    chartInstance = new Chart(ctx, {
+        type: "line",
+        data: { datasets },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    type: "linear",
+                    position: "bottom",
+                    grid: { display: showGrid },
+                    min: xMin,
+                    max: xMax,
+                    title: { display: true, text: "X Axis" }
+                },
+                y: {
+                    grid: { display: showGrid },
+                    min: yMin,
+                    max: yMax,
+                    title: { display: true, text: "Y Axis" }
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: { mode: "nearest" }
+            },
+            elements: { point: { radius: 0 } }
+        }
+    });
 }
 
-// Reset graph
-function resetGraph() {
-  xMinInput.value = -10;
-  xMaxInput.value = 10;
-  yMinInput.value = -10;
-  yMaxInput.value = 10;
-  updateRanges();
+// Add/Remove function input fields dynamically
+document.getElementById("addFunction").addEventListener("click", () => {
+    const functionInputs = document.getElementById("functionInputs");
+    const index = functionInputs.children.length;
+    const div = document.createElement("div");
+    div.classList.add("function-input-group");
+    div.innerHTML = `
+        <input type="text" class="form-control function-input" placeholder="e.g., sin(x)" data-index="${index}">
+        <div class="color-indicator" style="background-color: ${colors[index % colors.length]};"></div>
+        <button class="btn-remove" data-index="${index}">×</button>
+    `;
+    functionInputs.appendChild(div);
+});
 
-  const inputs = document.querySelectorAll('.function-input');
-  inputs.forEach((input, i) => {
-    if (i === 0) input.value = '';
-    else input.closest('.function-input-group').remove();
-  });
-  functions = [''];
-  plotGraph();
-}
+document.getElementById("functionInputs").addEventListener("click", (e) => {
+    if (e.target.classList.contains("btn-remove")) {
+        e.target.parentElement.remove();
+    }
+});
 
-// Initialize
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initGraphPlotter);
-else initGraphPlotter();
+// Buttons
+document.getElementById("plotGraph").addEventListener("click", plotGraph);
+
+document.getElementById("resetGraph").addEventListener("click", () => {
+    document.getElementById("xMin").value = -10;
+    document.getElementById("xMax").value = 10;
+    document.getElementById("yMin").value = -10;
+    document.getElementById("yMax").value = 10;
+    document.getElementById("functionInputs").innerHTML = `
+        <div class="function-input-group">
+            <input type="text" class="form-control function-input" placeholder="e.g., x^2, sin(x), tan(x)">
+            <div class="color-indicator" style="background-color: #1FB8CD;"></div>
+            <button class="btn-remove">×</button>
+        </div>`;
+    document.getElementById("graphLegend").innerHTML = "";
+    if (chartInstance) chartInstance.destroy();
+});
